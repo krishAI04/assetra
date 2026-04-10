@@ -1,0 +1,2459 @@
+openapi: 3.0.3
+info:
+  title: Assetra API
+  version: 1.0.0
+  description: Law-firm estate asset management API for the Assetra MVP.
+paths:
+  /api/asset-distributions/:
+    get:
+      operationId: asset_distributions_list
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      tags:
+      - Asset Distributions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+    post:
+      operationId: asset_distributions_create
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      tags:
+      - Asset Distributions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+  /api/asset-distributions/{id}/:
+    get:
+      operationId: asset_distributions_retrieve
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+    put:
+      operationId: asset_distributions_update
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssetDistribution'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+    patch:
+      operationId: asset_distributions_partial_update
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAssetDistribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAssetDistribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAssetDistribution'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+    delete:
+      operationId: asset_distributions_destroy
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/asset-distributions/{id}/approve/:
+    post:
+      operationId: asset_distributions_approve_create
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+  /api/asset-distributions/{id}/reject/:
+    post:
+      operationId: asset_distributions_reject_create
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+        description: Filter by approval status.
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset distribution.
+        required: true
+      tags:
+      - Asset Distributions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApprovalAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApprovalAction'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDistribution'
+          description: ''
+  /api/assets/:
+    get:
+      operationId: assets_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Assets
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+          description: ''
+    post:
+      operationId: assets_create
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+  /api/assets/{id}/:
+    get:
+      operationId: assets_retrieve
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset.
+        required: true
+      tags:
+      - Assets
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+    put:
+      operationId: assets_update
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset.
+        required: true
+      tags:
+      - Assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+    patch:
+      operationId: assets_partial_update
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset.
+        required: true
+      tags:
+      - Assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAsset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAsset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAsset'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+    delete:
+      operationId: assets_destroy
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by asset category.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this asset.
+        required: true
+      tags:
+      - Assets
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/audit-logs/:
+    get:
+      operationId: audit_logs_list
+      tags:
+      - Audit Logs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/audit-logs/{id}/:
+    get:
+      operationId: audit_logs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit log.
+        required: true
+      tags:
+      - Audit Logs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/beneficiaries/:
+    get:
+      operationId: beneficiaries_list
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Beneficiaries
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beneficiary'
+          description: ''
+    post:
+      operationId: beneficiaries_create
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Beneficiaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiary'
+          description: ''
+  /api/beneficiaries/{id}/:
+    get:
+      operationId: beneficiaries_retrieve
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this beneficiary.
+        required: true
+      tags:
+      - Beneficiaries
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiary'
+          description: ''
+    put:
+      operationId: beneficiaries_update
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this beneficiary.
+        required: true
+      tags:
+      - Beneficiaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Beneficiary'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiary'
+          description: ''
+    patch:
+      operationId: beneficiaries_partial_update
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this beneficiary.
+        required: true
+      tags:
+      - Beneficiaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeneficiary'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeneficiary'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeneficiary'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiary'
+          description: ''
+    delete:
+      operationId: beneficiaries_destroy
+      parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this beneficiary.
+        required: true
+      tags:
+      - Beneficiaries
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/client-assignments/:
+    get:
+      operationId: client_assignments_list
+      tags:
+      - Client Assignments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientAssignment'
+          description: ''
+    post:
+      operationId: client_assignments_create
+      tags:
+      - Client Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientAssignment'
+          description: ''
+  /api/client-assignments/{id}/:
+    get:
+      operationId: client_assignments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client assignment.
+        required: true
+      tags:
+      - Client Assignments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientAssignment'
+          description: ''
+    put:
+      operationId: client_assignments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client assignment.
+        required: true
+      tags:
+      - Client Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientAssignment'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientAssignment'
+          description: ''
+    patch:
+      operationId: client_assignments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client assignment.
+        required: true
+      tags:
+      - Client Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientAssignment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientAssignment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientAssignment'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientAssignment'
+          description: ''
+    delete:
+      operationId: client_assignments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client assignment.
+        required: true
+      tags:
+      - Client Assignments
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/clients/:
+    get:
+      operationId: clients_list
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+          description: ''
+    post:
+      operationId: clients_create
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+  /api/clients/{id}/:
+    get:
+      operationId: clients_retrieve
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    put:
+      operationId: clients_update
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    patch:
+      operationId: clients_partial_update
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    delete:
+      operationId: clients_destroy
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/clients/{id}/reopen/:
+    post:
+      operationId: clients_reopen_create
+      parameters:
+      - in: query
+        name: assigned_lawyer
+        schema:
+          type: string
+        description: Filter by assigned lawyer ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by name, phone, or email.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter by client status.
+      tags:
+      - Clients
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+  /api/dashboard/summary/:
+    get:
+      operationId: dashboard_summary_retrieve
+      tags:
+      - Dashboard
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+          description: ''
+  /api/documents/:
+    get:
+      operationId: documents_list
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Documents
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+          description: ''
+    post:
+      operationId: documents_create
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      tags:
+      - Documents
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Document'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Document'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/documents/{id}/:
+    get:
+      operationId: documents_retrieve
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - Documents
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    put:
+      operationId: documents_update
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - Documents
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Document'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Document'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    patch:
+      operationId: documents_partial_update
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - Documents
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDocument'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    delete:
+      operationId: documents_destroy
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+        description: Filter by asset ID.
+      - in: query
+        name: client
+        schema:
+          type: string
+        description: Filter by client ID.
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - Documents
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/firms/:
+    get:
+      operationId: firms_list
+      tags:
+      - Firms
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Firm'
+          description: ''
+    post:
+      operationId: firms_create
+      tags:
+      - Firms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Firm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Firm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Firm'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
+          description: ''
+  /api/firms/{id}/:
+    get:
+      operationId: firms_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this firm.
+        required: true
+      tags:
+      - Firms
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
+          description: ''
+    put:
+      operationId: firms_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this firm.
+        required: true
+      tags:
+      - Firms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Firm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Firm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Firm'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
+          description: ''
+    patch:
+      operationId: firms_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this firm.
+        required: true
+      tags:
+      - Firms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFirm'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
+          description: ''
+    delete:
+      operationId: firms_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this firm.
+        required: true
+      tags:
+      - Firms
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/:
+    get:
+      operationId: users_list
+      tags:
+      - Users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: users_create
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - Users
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    ApprovalAction:
+      type: object
+      properties:
+        rejection_reason:
+          type: string
+    ApprovalStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
+    Asset:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        client_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        description:
+          type: string
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - client
+      - client_name
+      - created_at
+      - firm
+      - id
+      - title
+      - updated_at
+    AssetDistribution:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        asset:
+          type: integer
+        asset_title:
+          type: string
+          readOnly: true
+        beneficiary:
+          type: integer
+        beneficiary_name:
+          type: string
+          readOnly: true
+        ownership_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        approval_status:
+          $ref: '#/components/schemas/ApprovalStatusEnum'
+        approved_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        approved_by_name:
+          type: string
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rejection_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_at
+      - approved_by
+      - approved_by_name
+      - asset
+      - asset_title
+      - beneficiary
+      - beneficiary_name
+      - created_at
+      - firm
+      - id
+      - ownership_percentage
+      - updated_at
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+          readOnly: true
+        actor:
+          type: integer
+          readOnly: true
+          nullable: true
+        actor_name:
+          type: string
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        target_model:
+          type: string
+          readOnly: true
+        target_id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor
+      - actor_name
+      - created_at
+      - description
+      - firm
+      - id
+      - metadata
+      - target_id
+      - target_model
+    Beneficiary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        relationship_to_client:
+          type: string
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - client
+      - created_at
+      - firm
+      - first_name
+      - full_name
+      - id
+      - last_name
+      - relationship_to_client
+      - updated_at
+    CategoryEnum:
+      enum:
+      - property
+      - bank
+      - stock
+      - vehicle
+      - insurance
+      - business
+      - other
+      type: string
+      description: |-
+        * `property` - Property
+        * `bank` - Bank
+        * `stock` - Stock
+        * `vehicle` - Vehicle
+        * `insurance` - Insurance
+        * `business` - Business
+        * `other` - Other
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        date_of_death:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+        reopened_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        reopened_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - firm
+      - first_name
+      - full_name
+      - id
+      - last_name
+      - reopened_at
+      - reopened_by
+      - updated_at
+    ClientAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        client_name:
+          type: string
+          readOnly: true
+        lawyer:
+          type: integer
+        lawyer_name:
+          type: string
+          readOnly: true
+        assigned_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_by
+      - client
+      - client_name
+      - created_at
+      - firm
+      - id
+      - lawyer
+      - lawyer_name
+      - updated_at
+    DashboardSummary:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+        total_assets:
+          type: integer
+        active_estates:
+          type: integer
+        pending_approvals:
+          type: integer
+      required:
+      - active_estates
+      - pending_approvals
+      - total_assets
+      - total_clients
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+          nullable: true
+        asset:
+          type: integer
+          nullable: true
+        uploaded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        uploaded_by_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        file:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - file
+      - firm
+      - id
+      - title
+      - updated_at
+      - uploaded_by
+      - uploaded_by_name
+    Firm:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    PatchedAsset:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        client_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        description:
+          type: string
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedAssetDistribution:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        asset:
+          type: integer
+        asset_title:
+          type: string
+          readOnly: true
+        beneficiary:
+          type: integer
+        beneficiary_name:
+          type: string
+          readOnly: true
+        ownership_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        approval_status:
+          $ref: '#/components/schemas/ApprovalStatusEnum'
+        approved_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        approved_by_name:
+          type: string
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rejection_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedBeneficiary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        relationship_to_client:
+          type: string
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClient:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        date_of_death:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+        reopened_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        reopened_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+        client_name:
+          type: string
+          readOnly: true
+        lawyer:
+          type: integer
+        lawyer_name:
+          type: string
+          readOnly: true
+        assigned_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firm:
+          type: integer
+        client:
+          type: integer
+          nullable: true
+        asset:
+          type: integer
+          nullable: true
+        uploaded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        uploaded_by_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        file:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFirm:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+        firm:
+          type: integer
+          nullable: true
+        firm_name:
+          type: string
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_senior_lawyer:
+          type: boolean
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        can_approve:
+          type: boolean
+          readOnly: true
+        can_finalize:
+          type: boolean
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+    RoleEnum:
+      enum:
+      - admin
+      - lawyer
+      - intern
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `lawyer` - Lawyer
+        * `intern` - Intern
+    StatusEnum:
+      enum:
+      - active
+      - deceased
+      - estate_processing
+      - closed
+      type: string
+      description: |-
+        * `active` - Active
+        * `deceased` - Deceased
+        * `estate_processing` - Estate Processing
+        * `closed` - Closed
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+        firm:
+          type: integer
+          nullable: true
+        firm_name:
+          type: string
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        is_senior_lawyer:
+          type: boolean
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        can_approve:
+          type: boolean
+          readOnly: true
+        can_finalize:
+          type: boolean
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - can_approve
+      - can_finalize
+      - date_joined
+      - firm_name
+      - id
+      - role
+      - username
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

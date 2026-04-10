@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assetra Signup</title>
+    <link rel="stylesheet" href="{% static 'css/assetra.css' %}">
+</head>
+<body class="auth-body">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <img src="{% static 'img/assetra-logo.png' %}" alt="Assetra" class="auth-logo">
+            <h1>Assetra</h1>
+        </div>
+        <h2>Create Workspace</h2>
+        <p class="auth-subtitle">Set up your firm and create the first admin account.</p>
+        <form method="post" class="stack-form compact">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors|striptags }}</div>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="button button-primary button-block">Create Workspace</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}" class="text-link">Sign in</a></p>
+    </section>
+</body>
+</html>

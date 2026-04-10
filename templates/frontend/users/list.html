@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Users | Assetra{% endblock %}
+
+{% block minimal_nav %}
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <a href="{% url 'users' %}" class="active">User Management</a>
+{% endblock %}
+
+{% block content %}
+<section class="simple-page-header">
+    <h1>User Management</h1>
+    <p>Manage organization access, roles, and permissions.</p>
+</section>
+
+<section class="filter-card">
+    <form method="get" class="toolbar">
+        <input type="text" name="search" placeholder="Search by username, name, or email" value="{{ search_query }}">
+        <select name="role">
+            <option value="">All roles</option>
+            {% for value, label in role_choices %}
+                <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status">
+            <option value="">All statuses</option>
+            <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+        <button type="submit" class="button button-secondary">Filter</button>
+    </form>
+</section>
+
+<section class="users-page">
+    <div class="users-table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User Name</th>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Senior Lawyer</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.get_full_name|default:user.username }}</strong>
+                            <div class="muted">@{{ user.username }}</div>
+                        </td>
+                        <td>{{ user.email|default:"-" }}</td>
+                        <td><span class="badge {{ user.role|status_class }}">{{ user.get_role_display }}</span></td>
+                        <td>{{ user.is_senior_lawyer|yes_no_label }}</td>
+                        <td><span class="badge {% if user.is_active %}badge-success-soft{% else %}badge-danger-soft{% endif %}">{% if user.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                        <td class="action-row">
+                            <a href="?edit={{ user.pk }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Edit</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="empty-text">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="users-form-wrap">
+        <div class="panel-header">
+            <h3>{% if form.instance.pk %}Edit User{% else %}Add New User{% endif %}</h3>
+        </div>
+        <form method="post" class="stack-form compact">
+            {% csrf_token %}
+            {% if form.instance.pk %}
+                <input type="hidden" name="edit_id" value="{{ form.instance.pk }}">
+            {% elif editing_user_id %}
+                <input type="hidden" name="edit_id" value="{{ editing_user_id }}">
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors|striptags }}</div>
+            {% endif %}
+            <div class="form-grid two">
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors|striptags }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="field-error">{{ form.username.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="field-error">{{ form.email.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {{ form.password }}
+                {% if form.password.help_text %}<div class="help-text">{{ form.password.help_text }}</div>{% endif %}
+                {% if form.password.errors %}<div class="field-error">{{ form.password.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-grid two">
+                <div class="form-group">
+                    <label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+                    {{ form.role }}
+                    {% if form.role.errors %}<div class="field-error">{{ form.role.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label" for="{{ form.is_active.id_for_label }}">
+                        {{ form.is_active }}
+                        <span>Active Account</span>
+                    </label>
+                    {% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors|striptags }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label" for="{{ form.is_senior_lawyer.id_for_label }}">
+                    {{ form.is_senior_lawyer }}
+                    <span>{{ form.is_senior_lawyer.label }}</span>
+                </label>
+                <div class="help-text">Only lawyer accounts can have approval access.</div>
+                {% if form.is_senior_lawyer.errors %}<div class="field-error">{{ form.is_senior_lawyer.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'users' %}" class="button button-secondary">Cancel</a>
+                <button type="submit" class="button button-primary">Save User</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Documents | Assetra{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Document Repository</h1>
+    </div>
+    <div class="page-header-actions">
+        <a class="button button-primary" href="#upload-form">Upload Document</a>
+    </div>
+</section>
+
+<section class="filter-card">
+    <form method="get" class="toolbar simple-two">
+        <input type="text" name="search" placeholder="Search by title" value="{{ search_query }}">
+        <select name="client">
+            <option value="">All clients</option>
+            {% for client in clients %}
+                <option value="{{ client.pk }}" {% if selected_client == client.pk|stringformat:"s" %}selected{% endif %}>{{ client.full_name }}</option>
+            {% endfor %}
+        </select>
+        <select name="asset">
+            <option value="">All assets</option>
+            {% for asset in assets %}
+                <option value="{{ asset.pk }}" {% if selected_asset == asset.pk|stringformat:"s" %}selected{% endif %}>{{ asset.title }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="button button-secondary">Filter</button>
+    </form>
+</section>
+
+<section class="detail-grid">
+    <div class="table-card span-wide">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Linked Client</th>
+                    <th>Linked Asset</th>
+                    <th>Uploader</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                    <tr>
+                        <td>{{ document.title }}</td>
+                        <td>{{ document.client.full_name|default:"-" }}</td>
+                        <td>{{ document.asset.title|default:"-" }}</td>
+                        <td>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username|default:"Unknown" }}</td>
+                        <td>{{ document.created_at|date:"M j, Y" }}</td>
+                        <td class="action-row">
+                            {% if document.file %}
+                                <a href="{{ document.file.url }}" target="_blank" rel="noopener">View</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="empty-text">No documents available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="panel" id="upload-form">
+        <div class="panel-header">
+            <h3>Upload Document</h3>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="stack-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-error">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="button button-primary">Upload</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

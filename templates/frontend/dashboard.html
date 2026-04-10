@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Dashboard | Assetra{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Good morning, {{ request.user.first_name|default:request.user.username }}</h1>
+        <p>Keep your firm's estate work clear, structured, and moving.</p>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <span class="stat-label">Total Clients</span>
+        <strong>{{ stats.total_clients }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Total Assets</span>
+        <strong>{{ stats.total_assets }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Active Estates</span>
+        <strong>{{ stats.active_estates }}</strong>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Pending Approvals</span>
+        <strong>{{ stats.pending_approvals }}</strong>
+    </article>
+</section>
+
+<section class="dashboard-grid">
+    <div class="quick-actions-panel">
+        <div class="panel-header">
+            <h3>Quick Actions</h3>
+        </div>
+        <div class="quick-actions-grid">
+            <a href="{% url 'client-create' %}" class="quick-action-card quick-action-card-client">
+                <span class="quick-action-icon" aria-hidden="true"></span>
+                <strong>Add Client</strong>
+                
+            </a>
+            <a href="{% url 'asset-create' %}" class="quick-action-card quick-action-card-asset">
+                <span class="quick-action-icon" aria-hidden="true"></span>
+                <strong>Add Asset</strong>
+                
+            </a>
+            <a href="{% url 'documents' %}" class="quick-action-card quick-action-card-doc">
+                <span class="quick-action-icon" aria-hidden="true"></span>
+                <strong>Upload Doc</strong>
+                
+            </a>
+            <a href="{% url 'approvals' %}" class="quick-action-card quick-action-card-approval">
+                <span class="quick-action-icon" aria-hidden="true"></span>
+                <strong>Approvals</strong>
+                
+                {% if stats.pending_approvals %}
+                    <span class="quick-action-badge">{{ stats.pending_approvals }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+    <div class="recent-panel">
+        <div class="panel-header">
+            <h3>Recent Activity</h3>
+            <a href="{% url 'audit-log' %}">View All</a>
+        </div>
+        <div class="recent-list">
+            {% for item in recent_activity %}
+                <div class="activity-item">
+                    <span class="avatar small">{{ item.actor.get_full_name|default:item.actor.username|default:"A"|initials }}</span>
+                    <div>
+                        <strong>{{ item.description|default:item.action|capfirst }}</strong>
+                        <p>{{ item.created_at|date:"M j, Y g:i A" }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty-text">No activity yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

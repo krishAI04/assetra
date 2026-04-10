@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Approvals | Assetra{% endblock %}
+
+{% block minimal_nav %}
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <a href="{% url 'approvals' %}" class="active">Approvals</a>
+{% endblock %}
+
+{% block content %}
+<section class="simple-page-header">
+    <h1>Review Queue</h1>
+    <p>Pending approval requests require your final sign-off.</p>
+</section>
+
+<section class="approval-actions-top">
+    {% if request.user.can_approve and selected_distribution and selected_distribution.approval_status == 'pending' %}
+        <form method="post" action="{% url 'distribution-reject' selected_distribution.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="rejection_reason" value="">
+            <button type="submit" class="button button-secondary">Reject Changes</button>
+        </form>
+        <form method="post" action="{% url 'distribution-approve' selected_distribution.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="button button-primary">Approve Distribution</button>
+        </form>
+    {% endif %}
+</section>
+
+<section class="filter-card">
+    <form method="get" class="toolbar simple-two">
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="search" placeholder="Search client, asset, or beneficiary" value="{{ search_query }}">
+        {% if selected_distribution %}<input type="hidden" name="selected" value="{{ selected_distribution.pk }}">{% endif %}
+        <button type="submit" class="button button-secondary">Filter</button>
+    </form>
+</section>
+
+<section class="split-page">
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Asset Details</th>
+                    <th>Beneficiary</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for distribution in distributions %}
+                    <tr {% if selected_distribution and selected_distribution.pk == distribution.pk %}class="row-selected"{% endif %}>
+                        <td>
+                            <strong>{{ distribution.asset.client.full_name }}</strong>
+                        </td>
+                        <td>
+                            <a href="?selected={{ distribution.pk }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ distribution.asset.title }}</a>
+                            <div class="muted">{{ distribution.asset.get_category_display }}</div>
+                        </td>
+                        <td>{{ distribution.beneficiary }}</td>
+                        <td>{{ distribution.ownership_percentage }}%</td>
+                        <td><span class="badge {{ distribution.approval_status|status_class }}">{{ distribution.get_approval_status_display }}</span></td>
+                        <td class="action-row">
+                            {% if request.user.can_approve and distribution.approval_status == 'pending' %}
+                                <form method="post" action="{% url 'distribution-approve' distribution.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="button-inline-success">Approve</button>
+                                </form>
+                                <form method="post" action="{% url 'distribution-reject' distribution.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="rejection_reason" value="">
+                                    <button type="submit" class="button-inline-danger">Reject</button>
+                                </form>
+                            {% else %}
+                                <span class="muted">No action</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="empty-text">No distributions match the current filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="split-layout">
+        {% if selected_distribution %}
+            <div class="summary-dark">
+                <div class="panel-header">
+                    <h3>Allocation Summary</h3>
+                </div>
+                <div class="stack-form compact">
+                    <div class="summary-metric">
+                        <div>
+                            <span class="help-text">Asset Value</span>
+                            <strong>{{ selected_distribution.asset.estimated_value|money }}</strong>
+                        </div>
+                        <div>
+                            <span class="help-text">Ownership</span>
+                            <strong>{{ selected_distribution.ownership_percentage }}%</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="help-text">Status</span>
+                        <strong>{{ selected_distribution.get_approval_status_display }}</strong>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" style="width: {{ selected_distribution.ownership_percentage }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="panel-header">
+                    <h3>Documents</h3>
+                </div>
+                <div class="doc-list">
+                    {% for document in linked_documents %}
+                        <a href="{{ document.file.url }}" target="_blank" rel="noopener" class="doc-item">
+                            <div>
+                                <strong>{{ document.title }}</strong>
+                                <span>{{ document.created_at|date:"M j, Y" }}</span>
+                            </div>
+                            <span>Open</span>
+                        </a>
+                    {% empty %}
+                        <p class="empty-text">No linked documents.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="panel-header">
+                    <h3>Distribution Activity</h3>
+                </div>
+                <div class="stack-form compact">
+                    <div>
+                        <strong>Created distribution</strong>
+                        <div class="help-text">{{ selected_distribution.created_at|date:"M j, Y g:i A" }}</div>
+                    </div>
+                    <div>
+                        <strong>Updated distribution</strong>
+                        <div class="help-text">{{ selected_distribution.updated_at|date:"M j, Y g:i A" }}</div>
+                    </div>
+                    {% if request.user.can_approve and selected_distribution.approval_status == 'pending' %}
+                        <div class="form-group">
+                            <label for="{{ reject_form.rejection_reason.id_for_label }}">Optional rejection note</label>
+                            <form method="post" action="{% url 'distribution-reject' selected_distribution.pk %}">
+                                {% csrf_token %}
+                                {{ reject_form.rejection_reason }}
+                                <div class="form-actions" style="margin-top: 12px;">
+                                    <button type="submit" class="button button-danger">Reject Distribution</button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="side-panel">
+                <div class="stack-form">
+                    <p class="empty-text">Choose a distribution to review its details.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

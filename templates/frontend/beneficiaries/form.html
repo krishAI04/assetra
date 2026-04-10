@@ -1,0 +1,79 @@
+{% extends "base_minimal.html" %}
+
+{% block title %}{{ page_title }} | Assetra{% endblock %}
+
+{% block content %}
+<section class="standalone-form-shell">
+    <p class="breadcrumb">Beneficiaries &nbsp;&rsaquo;&nbsp; {{ page_title }}</p>
+    <div class="simple-page-header">
+        <h1>Beneficiary Details</h1>
+        <p>Enter the personal information and relationship details for this beneficiary.</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="sheet-card">
+            <div class="sheet-section">
+                <div class="sheet-section-body">
+                    <div class="form-group">
+                        <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
+                        {{ form.client }}
+                        {% if form.client.errors %}<div class="field-error">{{ form.client.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="sheet-section">
+                <div class="sheet-section-body">
+                    <div class="simple-page-header" style="margin-bottom: 20px;">
+                        <h1 style="font-size: 15px; margin-bottom: 0;">Personal Information</h1>
+                    </div>
+                    <div class="form-grid two">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors|striptags }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sheet-section">
+                <div class="sheet-section-body">
+                    <div class="simple-page-header" style="margin-bottom: 20px;">
+                        <h1 style="font-size: 15px; margin-bottom: 0;">Relationship Details</h1>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.relationship_to_client.id_for_label }}">{{ form.relationship_to_client.label }}</label>
+                            {{ form.relationship_to_client }}
+                            {% if form.relationship_to_client.errors %}<div class="field-error">{{ form.relationship_to_client.errors|striptags }}</div>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors|striptags }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sheet-footer">
+            <a href="{% url 'clients' %}" class="button button-secondary">Cancel</a>
+            <button type="submit" class="button button-primary">Save Beneficiary</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

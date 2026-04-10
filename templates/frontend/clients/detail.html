@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}{{ client.full_name }} | Assetra{% endblock %}
+
+{% block content %}
+<section class="client-hero">
+    <div class="client-hero-top">
+        <div class="client-hero-identity">
+            <span class="avatar">{{ client.full_name|initials }}</span>
+            <div>
+                <h2>{{ client.full_name }}</h2>
+                <div class="page-header-actions">
+                    <span class="badge {{ client.status|status_class }}">{{ client.get_status_display }}</span>
+                    <span class="help-text">
+                        Assigned lawyers:
+                        {% for assignment in assignments %}
+                            {{ assignment.lawyer.get_full_name|default:assignment.lawyer.username }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Unassigned
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="page-header-actions">
+            <a class="button button-secondary" href="{% url 'client-edit' client.pk %}">Edit Client</a>
+            <a class="button button-primary" href="{% url 'asset-create' %}?client={{ client.pk }}">Add Asset</a>
+            <a class="button button-secondary" href="{% url 'beneficiary-create' %}?client={{ client.pk }}">Add Beneficiary</a>
+        </div>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card"><span class="stat-label">Assets</span><strong>{{ asset_count }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Beneficiaries</span><strong>{{ beneficiary_count }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Documents</span><strong>{{ document_count }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Pending Approvals</span><strong>{{ pending_approvals }}</strong></article>
+</section>
+
+<section class="tab-row">
+    <a class="active" href="#overview">Overview</a>
+    <a href="#assets">Assets</a>
+    <a href="#beneficiaries">Beneficiaries</a>
+    <a href="#distributions">Distributions</a>
+    <a href="#documents">Documents</a>
+</section>
+
+<section class="detail-grid" id="overview">
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Client Profile</h3>
+        </div>
+        <dl class="detail-list">
+            <div><dt>Email</dt><dd>{{ client.email|default:"Not provided" }}</dd></div>
+            <div><dt>Phone</dt><dd>{{ client.phone|default:"Not provided" }}</dd></div>
+            <div><dt>Address</dt><dd>{{ client.address|default:"Not provided" }}</dd></div>
+            <div><dt>Date of death</dt><dd>{{ client.date_of_death|default:"Not recorded" }}</dd></div>
+            <div class="span-all"><dt>Notes</dt><dd>{{ client.notes|default:"No notes yet." }}</dd></div>
+        </dl>
+    </div>
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Recent Activity</h3>
+            <a href="{% url 'audit-log' %}">Open Log</a>
+        </div>
+        <div class="activity-list">
+            {% for item in activity %}
+                <div class="activity-item">
+                    <span class="avatar small">{{ item.actor.get_full_name|default:item.actor.username|default:"A"|initials }}</span>
+                    <div>
+                        <strong>{{ item.description|default:item.action|capfirst }}</strong>
+                        <p>{{ item.created_at|date:"M j, Y g:i A" }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty-text">No recent activity for this client.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="table-card" id="assets" style="margin-bottom: 18px;">
+    <div class="panel-header">
+        <h3>Asset Inventory</h3>
+        <a href="{% url 'asset-create' %}?client={{ client.pk }}">Add Asset</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Estimated Value</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+                <tr>
+                    <td>
+                        <strong>{{ asset.title }}</strong>
+                        <div class="muted">{{ asset.description|default:"No description" }}</div>
+                    </td>
+                    <td><span class="badge badge-info">{{ asset.get_category_display }}</span></td>
+                    <td>{{ asset.estimated_value|money }}</td>
+                    <td class="action-row"><a href="{% url 'asset-edit' asset.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="empty-text">No assets recorded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="table-card" id="beneficiaries" style="margin-bottom: 18px;">
+    <div class="panel-header">
+        <h3>Beneficiaries</h3>
+        <a href="{% url 'beneficiary-create' %}?client={{ client.pk }}">Add Beneficiary</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Relationship</th>
+                <th>Contact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for beneficiary in beneficiaries %}
+                <tr>
+                    <td>{{ beneficiary }}</td>
+                    <td>{{ beneficiary.relationship_to_client }}</td>
+                    <td>
+                        <div>{{ beneficiary.email|default:"No email" }}</div>
+                        <div class="muted">{{ beneficiary.phone|default:"No phone" }}</div>
+                    </td>
+                    <td class="action-row"><a href="{% url 'beneficiary-edit' beneficiary.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="empty-text">No beneficiaries recorded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="table-card" id="distributions" style="margin-bottom: 18px;">
+    <div class="panel-header">
+        <h3>Distributions</h3>
+        <a href="{% url 'approvals' %}">Review Approvals</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Beneficiary</th>
+                <th>Ownership</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for distribution in distributions %}
+                <tr>
+                    <td>{{ distribution.asset.title }}</td>
+                    <td>{{ distribution.beneficiary }}</td>
+                    <td>{{ distribution.ownership_percentage }}%</td>
+                    <td><span class="badge {{ distribution.approval_status|status_class }}">{{ distribution.get_approval_status_display }}</span></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="empty-text">No distributions created yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="table-card" id="documents">
+    <div class="panel-header">
+        <h3>Documents</h3>
+        <a href="{% url 'documents' %}?client={{ client.pk }}">Browse Documents</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Linked Asset</th>
+                <th>Uploaded By</th>
+                <th>Date Added</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documents %}
+                <tr>
+                    <td>
+                        {% if document.file %}
+                            <a href="{{ document.file.url }}" target="_blank" rel="noopener">{{ document.title }}</a>
+                        {% else %}
+                            {{ document.title }}
+                        {% endif %}
+                    </td>
+                    <td>{{ document.asset.title|default:"Client file" }}</td>
+                    <td>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username|default:"Unknown" }}</td>
+                    <td>{{ document.created_at|date:"M j, Y" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="empty-text">No documents uploaded yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

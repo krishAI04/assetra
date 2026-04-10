@@ -1,0 +1,64 @@
+{% load static core_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Assetra{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/assetra.css' %}">
+</head>
+<body class="workspace-body">
+    <div class="workspace-shell">
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="{% url 'dashboard' %}">
+                <span class="sidebar-logo-card">
+                    <img src="{% static 'img/assetra-logo.png' %}" alt="Assetra" class="sidebar-logo">
+                </span>
+            </a>
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+                <a href="{% url 'clients' %}" class="{% if request.resolver_match.url_name == 'clients' or request.resolver_match.url_name == 'client-create' or request.resolver_match.url_name == 'client-workspace' or request.resolver_match.url_name == 'client-edit' or request.resolver_match.url_name == 'asset-create' or request.resolver_match.url_name == 'asset-edit' or request.resolver_match.url_name == 'beneficiary-create' or request.resolver_match.url_name == 'beneficiary-edit' %}active{% endif %}">Clients</a>
+                <a href="{% url 'approvals' %}" class="{% if request.resolver_match.url_name == 'approvals' %}active{% endif %}">Approvals</a>
+                <a href="{% url 'documents' %}" class="{% if request.resolver_match.url_name == 'documents' %}active{% endif %}">Documents</a>
+                {% if request.user.role == 'admin' %}
+                    <a href="{% url 'users' %}" class="{% if request.resolver_match.url_name == 'users' %}active{% endif %}">Users</a>
+                {% endif %}
+                <a href="{% url 'audit-log' %}" class="{% if request.resolver_match.url_name == 'audit-log' %}active{% endif %}">Audit Log</a>
+            </nav>
+            <div class="sidebar-profile">
+                <span class="avatar sidebar-avatar">{{ request.user.get_full_name|default:request.user.username|initials }}</span>
+                <div>
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <span>{% if request.user.is_senior_lawyer %}Senior Lawyer{% else %}{{ request.user.get_role_display }}{% endif %}</span>
+                </div>
+            </div>
+        </aside>
+        <div class="workspace-main">
+            <header class="workspace-topbar">
+                <div class="topbar-firm">{{ firm_name }}</div>
+                <div class="topbar-user">
+                    <div class="topbar-meta">
+                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                        <span>{% if request.user.is_senior_lawyer %}Senior Lawyer{% else %}{{ request.user.get_role_display }}{% endif %}</span>
+                    </div>
+                    <span class="avatar topbar-avatar">{{ request.user.get_full_name|default:request.user.username|initials }}</span>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-link">Log out</button>
+                    </form>
+                </div>
+            </header>
+            <main class="content">
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="message {{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+</body>
+</html>

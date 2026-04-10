@@ -1,0 +1,53 @@
+from django.urls import path
+
+from .web_views import (
+    ApprovalsView,
+    ApproveDistributionView,
+    AssetCreateView,
+    AssetraLoginView,
+    AssetraLogoutView,
+    AssetraSignupView,
+    AssetUpdateView,
+    AuditLogPageView,
+    BeneficiaryCreateView,
+    BeneficiaryUpdateView,
+    ClientCreateView,
+    ClientDetailView,
+    ClientListView,
+    ClientUpdateView,
+    DashboardView,
+    DocumentsView,
+    HomeRedirectView,
+    RejectDistributionView,
+    UserManagementView,
+)
+
+urlpatterns = [
+    path("", HomeRedirectView.as_view(), name="home"),
+    path("login/", AssetraLoginView.as_view(), name="login"),
+    path("signup/", AssetraSignupView.as_view(), name="signup"),
+    path("logout/", AssetraLogoutView.as_view(), name="logout"),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
+    path("clients/", ClientListView.as_view(), name="clients"),
+    path("clients/new/", ClientCreateView.as_view(), name="client-create"),
+    path("clients/<int:pk>/", ClientDetailView.as_view(), name="client-workspace"),
+    path("clients/<int:pk>/edit/", ClientUpdateView.as_view(), name="client-edit"),
+    path("assets/new/", AssetCreateView.as_view(), name="asset-create"),
+    path("assets/<int:pk>/edit/", AssetUpdateView.as_view(), name="asset-edit"),
+    path("beneficiaries/new/", BeneficiaryCreateView.as_view(), name="beneficiary-create"),
+    path("beneficiaries/<int:pk>/edit/", BeneficiaryUpdateView.as_view(), name="beneficiary-edit"),
+    path("documents/", DocumentsView.as_view(), name="documents"),
+    path("approvals/", ApprovalsView.as_view(), name="approvals"),
+    path(
+        "approvals/<int:pk>/approve/",
+        ApproveDistributionView.as_view(),
+        name="distribution-approve",
+    ),
+    path(
+        "approvals/<int:pk>/reject/",
+        RejectDistributionView.as_view(),
+        name="distribution-reject",
+    ),
+    path("users/", UserManagementView.as_view(), name="users"),
+    path("audit-log/", AuditLogPageView.as_view(), name="audit-log"),
+]
