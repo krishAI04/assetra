@@ -3,6 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Count, Q, Sum
+from django.http import FileResponse
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -85,6 +86,16 @@ class FrontendBaseMixin(LoginRequiredMixin):
             "firm_name": self.request.user.firm.name if self.request.user.firm else "Assetra",
             **kwargs,
         }
+
+    def user_can_access_document(self, document):
+        """
+        Allow access only to authenticated users from the same firm.
+        Superusers can bypass firm restrictions.
+        """
+        user = self.request.user
+        if user.is_superuser:
+            return True
+        return bool(user.firm_id and user.firm_id == document.firm_id)
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
@@ -478,6 +489,24 @@ class DocumentsView(FrontendBaseMixin, TemplateView):
             )
         )
         return context
+
+
+class ProtectedDocumentView(FrontendBaseMixin, View):
+    """
+    Serve uploaded documents through a permission-checked Django view
+    instead of exposing the media URL directly.
+    """
+
+    def get(self, request, pk):
+        document = get_object_or_404(
+            Document.objects.select_related("firm", "client", "asset"),
+            pk=pk,
+        )
+
+        if not self.user_can_access_document(document):
+            return HttpResponseForbidden("You do not have permission to view this document.")
+
+        return FileResponse(document.file.open("rb"), as_attachment=False)
 
 
 class ApprovalsView(FrontendBaseMixin, TemplateView):

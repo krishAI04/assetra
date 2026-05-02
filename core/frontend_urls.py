@@ -18,6 +18,7 @@ from .web_views import (
     DashboardView,
     DocumentsView,
     HomeRedirectView,
+    ProtectedDocumentView,
     RejectDistributionView,
     UserManagementView,
 )
@@ -37,6 +38,7 @@ urlpatterns = [
     path("beneficiaries/new/", BeneficiaryCreateView.as_view(), name="beneficiary-create"),
     path("beneficiaries/<int:pk>/edit/", BeneficiaryUpdateView.as_view(), name="beneficiary-edit"),
     path("documents/", DocumentsView.as_view(), name="documents"),
+    path("documents/<int:pk>/open/", ProtectedDocumentView.as_view(), name="document-open"),
     path("approvals/", ApprovalsView.as_view(), name="approvals"),
     path(
         "approvals/<int:pk>/approve/",

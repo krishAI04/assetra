@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
@@ -232,6 +233,8 @@ class AssetDistributionSerializer(FullCleanModelSerializer):
 
 class DocumentSerializer(FullCleanModelSerializer):
     uploaded_by_name = serializers.CharField(source="uploaded_by.get_full_name", read_only=True)
+    file = serializers.CharField(source="file.name", read_only=True)
+    download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
@@ -244,10 +247,16 @@ class DocumentSerializer(FullCleanModelSerializer):
             "uploaded_by_name",
             "title",
             "file",
+            "download_url",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "uploaded_by", "uploaded_by_name", "created_at", "updated_at")
+
+    def get_download_url(self, obj):
+        request = self.context.get("request")
+        path = reverse("document-open", args=[obj.pk])
+        return request.build_absolute_uri(path) if request else path
 
 
 class AuditLogSerializer(serializers.ModelSerializer):

@@ -192,7 +192,7 @@
                 <tr>
                     <td>
                         {% if document.file %}
-                            <a href="{{ document.file.url }}" target="_blank" rel="noopener">{{ document.title }}</a>
+                            <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener">{{ document.title }}</a>
                         {% else %}
                             {{ document.title }}
                         {% endif %}

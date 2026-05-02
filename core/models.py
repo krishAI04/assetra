@@ -1,3 +1,5 @@
+import os
+import uuid
 from decimal import Decimal
 
 from django.contrib.auth.models import AbstractUser
@@ -297,6 +299,16 @@ class AssetDistribution(TimeStampedModel):
         return f"{self.asset} -> {self.beneficiary} ({self.ownership_percentage}%)"
 
 
+def document_upload_to(instance, filename):
+    """
+    Store uploaded documents using randomized names to avoid exposing
+    original filenames or predictable paths.
+    """
+    _, extension = os.path.splitext(filename or "")
+    randomized_name = f"{uuid.uuid4().hex}{extension.lower()}"
+    return os.path.join("documents", randomized_name)
+
+
 class Document(TimeStampedModel):
     firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="documents")
     client = models.ForeignKey(
@@ -320,7 +332,7 @@ class Document(TimeStampedModel):
         related_name="uploaded_documents",
     )
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to="documents/")
+    file = models.FileField(upload_to=document_upload_to)
 
     class Meta:
         ordering = ["-created_at"]

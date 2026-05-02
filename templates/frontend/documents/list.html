@@ -54,7 +54,7 @@
                         <td>{{ document.created_at|date:"M j, Y" }}</td>
                         <td class="action-row">
                             {% if document.file %}
-                                <a href="{{ document.file.url }}" target="_blank" rel="noopener">View</a>
+                                <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener">View</a>
                             {% endif %}
                         </td>
                     </tr>

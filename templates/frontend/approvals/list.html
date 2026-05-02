@@ -124,7 +124,7 @@
                 </div>
                 <div class="doc-list">
                     {% for document in linked_documents %}
-                        <a href="{{ document.file.url }}" target="_blank" rel="noopener" class="doc-item">
+                        <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener" class="doc-item">
                             <div>
                                 <strong>{{ document.title }}</strong>
                                 <span>{{ document.created_at|date:"M j, Y" }}</span>
