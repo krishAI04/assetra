@@ -1,0 +1,56 @@
+{% extends "base_minimal.html" %}
+
+{% block title %}{{ page_title }} | Assetra{% endblock %}
+
+{% block content %}
+<section class="standalone-form-shell">
+    <p class="breadcrumb">Distributions &nbsp;&rsaquo;&nbsp; {{ page_title }}</p>
+    <div class="simple-page-header">
+        <h1>Asset Distribution</h1>
+        <p>Link one asset to one beneficiary and enter the ownership percentage.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="sheet-card">
+            <div class="sheet-section">
+                <div class="sheet-section-body">
+                    <div class="simple-page-header" style="margin-bottom: 20px;">
+                        <h1 style="font-size: 15px; margin-bottom: 0;">Distribution Details</h1>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="field-error" style="margin-bottom: 16px;">{{ form.non_field_errors|striptags }}</div>
+                    {% endif %}
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.asset.id_for_label }}">{{ form.asset.label }}</label>
+                            {{ form.asset }}
+                            {% if form.asset.errors %}<div class="field-error">{{ form.asset.errors|striptags }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.beneficiary.id_for_label }}">{{ form.beneficiary.label }}</label>
+                            {{ form.beneficiary }}
+                            {% if form.beneficiary.errors %}<div class="field-error">{{ form.beneficiary.errors|striptags }}</div>{% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.ownership_percentage.id_for_label }}">{{ form.ownership_percentage.label }}</label>
+                            {{ form.ownership_percentage }}
+                            <div class="help-text">Example: 50 means 50% ownership for this beneficiary.</div>
+                            {% if form.ownership_percentage.errors %}<div class="field-error">{{ form.ownership_percentage.errors|striptags }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sheet-footer">
+            <a href="{% url 'approvals' %}" class="button button-secondary">Cancel</a>
+            <button type="submit" class="button button-primary">Save Distribution</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

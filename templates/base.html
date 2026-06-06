@@ -36,7 +36,45 @@
         <div class="workspace-main">
             <header class="workspace-topbar">
                 <div class="topbar-firm">{{ firm_name }}</div>
+                <form method="get" action="{% url 'global-search' %}" class="topbar-search">
+                    <input type="search" name="q" placeholder="Search clients, assets, documents..." value="{{ global_search_query }}">
+                    <button type="submit">Search</button>
+                </form>
                 <div class="topbar-user">
+                    <details class="notification-menu">
+                        <summary aria-label="Notifications">
+                            <span class="notification-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M12 22a2.5 2.5 0 0 0 2.3-1.5H9.7A2.5 2.5 0 0 0 12 22Zm7-6h-1V10a6 6 0 0 0-4.5-5.8V3a1.5 1.5 0 0 0-3 0v1.2A6 6 0 0 0 6 10v6H5a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2Zm-3 0H8v-6a4 4 0 0 1 8 0v6Z" />
+                                </svg>
+                            </span>
+                            {% if topbar_unread_notifications %}
+                                <span class="notification-count">{{ topbar_unread_notifications }}</span>
+                            {% endif %}
+                        </summary>
+                        <div class="notification-dropdown">
+                            <div class="notification-dropdown-header">
+                                <strong>Notifications</strong>
+                                {% if topbar_unread_notifications %}
+                                    <form method="post" action="{% url 'notifications-read' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit">Mark read</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            <div class="notification-list">
+                                {% for notification in topbar_notifications %}
+                                    <a href="{{ notification.target_url|default:'#' }}" class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                                        <span>{{ notification.message }}</span>
+                                        <small>{{ notification.created_at|date:"M j, g:i A" }}</small>
+                                    </a>
+                                {% empty %}
+                                    <p class="empty-text">No notifications yet.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
                     <div class="topbar-meta">
                         <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
                         <span>{% if request.user.is_senior_lawyer %}Senior Lawyer{% else %}{{ request.user.get_role_display }}{% endif %}</span>

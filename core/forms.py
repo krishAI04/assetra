@@ -3,7 +3,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 
-from .models import Asset, Beneficiary, Client, Document, Firm, User
+from .models import Asset, AssetDistribution, Beneficiary, Client, Document, Firm, User
 
 
 class StyledAuthenticationForm(AuthenticationForm):
@@ -16,6 +16,7 @@ class StyledAuthenticationForm(AuthenticationForm):
 class SignupForm(forms.Form):
     firm_name = forms.CharField(max_length=255, label="Firm name")
     first_name = forms.CharField(max_length=150)
+    
     last_name = forms.CharField(max_length=150)
     username = forms.CharField(max_length=150)
     email = forms.EmailField()
@@ -29,19 +30,19 @@ class SignupForm(forms.Form):
     )
 
     def clean_firm_name(self):
-        firm_name = self.cleaned_data["firm_name"].strip()
+        firm_name = self.cleaned_data["firm_name"]
         if Firm.objects.filter(name__iexact=firm_name).exists():
             raise ValidationError("A firm with this name already exists.")
         return firm_name
 
     def clean_username(self):
-        username = self.cleaned_data["username"].strip()
+        username = self.cleaned_data["username"]
         if User.objects.filter(username__iexact=username).exists():
             raise ValidationError("This username is already in use.")
         return username
 
     def clean_email(self):
-        email = self.cleaned_data["email"].strip()
+        email = self.cleaned_data["email"]
         if User.objects.filter(email__iexact=email).exists():
             raise ValidationError("This email is already in use.")
         return email
@@ -50,17 +51,18 @@ class SignupForm(forms.Form):
         cleaned_data = super().clean()
         password1 = cleaned_data.get("password1")
         password2 = cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords do not match.")
-        if password1 and password2 and password1 == password2:
+        if password1 and password2:
+            if password1 != password2:
+                raise ValidationError("Passwords do not match.")
+
             preview_user = User(
                 first_name=cleaned_data.get("first_name", ""),
                 last_name=cleaned_data.get("last_name", ""),
                 username=cleaned_data.get("username", ""),
                 email=cleaned_data.get("email", ""),
             )
+
             password_validation.validate_password(password1, user=preview_user)
-        return cleaned_data
 
     def save(self):
         firm = Firm.objects.create(name=self.cleaned_data["firm_name"])
@@ -102,6 +104,7 @@ class ClientForm(FirmScopedModelForm):
             "address": forms.Textarea(attrs={"rows": 3}),
             "notes": forms.Textarea(attrs={"rows": 4}),
             "date_of_death": forms.DateInput(attrs={"type": "date"}),
+            "phone":forms.NumberInput
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -160,6 +163,8 @@ class BeneficiaryForm(FirmScopedModelForm):
 
 
 class DocumentForm(FirmScopedModelForm):
+    asset_client_map = {}
+
     class Meta:
         model = Document
         fields = ["title", "client", "asset", "file"]
@@ -171,9 +176,56 @@ class DocumentForm(FirmScopedModelForm):
             self.fields["client"].queryset = Client.objects.filter(firm=user.firm).order_by(
                 "last_name", "first_name"
             )
-            self.fields["asset"].queryset = Asset.objects.filter(firm=user.firm).order_by("title")
+            assets = Asset.objects.filter(firm=user.firm).order_by("title")
+            self.fields["asset"].queryset = assets
+            self.asset_client_map = {str(asset.pk): str(asset.client_id) for asset in assets}
         self.fields["client"].required = False
         self.fields["asset"].required = False
+
+
+class AssetDistributionForm(FirmScopedModelForm):
+    """
+    Simple form for creating one distribution record.
+
+    It connects:
+    - one asset
+    - one beneficiary
+    - one ownership percentage
+    """
+
+    class Meta:
+        model = AssetDistribution
+        fields = ["asset", "beneficiary", "ownership_percentage"]
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, user=user, **kwargs)
+
+        if user and user.firm_id:
+            self.instance.firm = user.firm
+            self.fields["asset"].queryset = Asset.objects.filter(firm=user.firm).order_by("title")
+            self.fields["beneficiary"].queryset = Beneficiary.objects.filter(firm=user.firm).order_by(
+                "last_name",
+                "first_name",
+            )
+
+        # If a client id is passed in, keep the dropdowns limited to that client's records.
+        client_id = self.initial.get("client")
+        if client_id:
+            self.fields["asset"].queryset = self.fields["asset"].queryset.filter(client_id=client_id)
+            self.fields["beneficiary"].queryset = self.fields["beneficiary"].queryset.filter(
+                client_id=client_id
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        asset = cleaned_data.get("asset")
+        beneficiary = cleaned_data.get("beneficiary")
+
+        # Basic form-level check so the user sees a clear message before model save.
+        if asset and beneficiary and asset.client_id != beneficiary.client_id:
+            raise ValidationError("Asset and beneficiary must belong to the same client.")
+
+        return cleaned_data
 
 
 class UserManagementForm(FirmScopedModelForm):

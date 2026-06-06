@@ -378,3 +378,39 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} {self.target_model}#{self.target_id}"
+
+
+class Notification(TimeStampedModel):
+    class Type(models.TextChoices):
+        INFO = "info", "Info"
+        CLIENT = "client", "Client"
+        DOCUMENT = "document", "Document"
+        APPROVAL = "approval", "Approval"
+        USER = "user", "User"
+
+    firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="notifications")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+    message = models.CharField(max_length=255)
+    notification_type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+        default=Type.INFO,
+    )
+    target_url = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["firm", "is_read", "created_at"]),
+            models.Index(fields=["user", "is_read", "created_at"]),
+        ]
+
+    def __str__(self):
+        return self.message

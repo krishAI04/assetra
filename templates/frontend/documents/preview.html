@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} | Assetra{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>{{ document.title }}</h1>
+        <p>Secure document preview with firm access checks.</p>
+    </div>
+    <div class="page-header-actions">
+        <a class="button button-secondary" href="{% url 'documents' %}">Back to Documents</a>
+        <a class="button button-primary" href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener">Open Full Screen</a>
+    </div>
+</section>
+
+<section class="document-preview-layout">
+    <aside class="document-preview-meta">
+        <div class="panel-header">
+            <h3>Document Details</h3>
+        </div>
+        <dl class="detail-list single">
+            <div>
+                <dt>Linked Client</dt>
+                <dd>{{ document.client.full_name|default:"Not linked" }}</dd>
+            </div>
+            <div>
+                <dt>Linked Asset</dt>
+                <dd>{{ document.asset.title|default:"Not linked" }}</dd>
+            </div>
+            <div>
+                <dt>Uploaded By</dt>
+                <dd>{{ document.uploaded_by.get_full_name|default:document.uploaded_by.username|default:"Unknown" }}</dd>
+            </div>
+            <div>
+                <dt>Date Added</dt>
+                <dd>{{ document.created_at|date:"M j, Y g:i A" }}</dd>
+            </div>
+        </dl>
+    </aside>
+    <div class="document-preview-frame">
+        <iframe src="{% url 'document-open' document.pk %}" title="{{ document.title }}"></iframe>
+    </div>
+</section>
+{% endblock %}

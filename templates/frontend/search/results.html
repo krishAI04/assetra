@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Search | Assetra{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Search Results</h1>
+        <p>{% if query %}Showing matches for "{{ query }}"{% else %}Search clients, assets, beneficiaries, and documents.{% endif %}</p>
+    </div>
+</section>
+
+<section class="search-results-grid">
+    <article class="search-result-card">
+        <div class="panel-header">
+            <h3>Clients</h3>
+        </div>
+        <div class="search-result-list">
+            {% for client in results.clients %}
+                <a href="{% url 'client-workspace' client.pk %}">
+                    <strong>{{ client.full_name }}</strong>
+                    <span>{{ client.email|default:client.phone|default:"Client record" }}</span>
+                </a>
+            {% empty %}
+                <p class="empty-text">No client matches.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="search-result-card">
+        <div class="panel-header">
+            <h3>Assets</h3>
+        </div>
+        <div class="search-result-list">
+            {% for asset in results.assets %}
+                <a href="{% url 'client-workspace' asset.client.pk %}#assets">
+                    <strong>{{ asset.title }}</strong>
+                    <span>{{ asset.client.full_name }} · {{ asset.get_category_display }}</span>
+                </a>
+            {% empty %}
+                <p class="empty-text">No asset matches.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="search-result-card">
+        <div class="panel-header">
+            <h3>Beneficiaries</h3>
+        </div>
+        <div class="search-result-list">
+            {% for beneficiary in results.beneficiaries %}
+                <a href="{% url 'client-workspace' beneficiary.client.pk %}#beneficiaries">
+                    <strong>{{ beneficiary }}</strong>
+                    <span>{{ beneficiary.client.full_name }} · {{ beneficiary.relationship_to_client }}</span>
+                </a>
+            {% empty %}
+                <p class="empty-text">No beneficiary matches.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="search-result-card">
+        <div class="panel-header">
+            <h3>Documents</h3>
+        </div>
+        <div class="search-result-list">
+            {% for document in results.documents %}
+                <a href="{% url 'document-preview' document.pk %}">
+                    <strong>{{ document.title }}</strong>
+                    <span>{{ document.client.full_name|default:"Client file" }}{% if document.asset %} · {{ document.asset.title }}{% endif %}</span>
+                </a>
+            {% empty %}
+                <p class="empty-text">No document matches.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

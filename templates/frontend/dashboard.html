@@ -30,6 +30,27 @@
     </article>
 </section>
 
+<section class="charts-grid">
+    <article class="chart-card">
+        <div class="panel-header">
+            <h3>Assets by Type</h3>
+        </div>
+        <canvas id="assetsByTypeChart" height="170"></canvas>
+    </article>
+    <article class="chart-card">
+        <div class="panel-header">
+            <h3>Approval Status</h3>
+        </div>
+        <canvas id="approvalStatusChart" height="170"></canvas>
+    </article>
+    <article class="chart-card">
+        <div class="panel-header">
+            <h3>Monthly Activity</h3>
+        </div>
+        <canvas id="monthlyActivityChart" height="170"></canvas>
+    </article>
+</section>
+
 <section class="dashboard-grid">
     <div class="quick-actions-panel">
         <div class="panel-header">
@@ -48,7 +69,7 @@
             </a>
             <a href="{% url 'documents' %}" class="quick-action-card quick-action-card-doc">
                 <span class="quick-action-icon" aria-hidden="true"></span>
-                <strong>Upload Doc</strong>
+                <strong>Upload Document</strong>
                 
             </a>
             <a href="{% url 'approvals' %}" class="quick-action-card quick-action-card-approval">
@@ -81,4 +102,41 @@
         </div>
     </div>
 </section>
+
+{{ chart_data|json_script:"dashboard-chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = JSON.parse(document.getElementById("dashboard-chart-data").textContent);
+    const chartColors = ["#274792", "#2FBF90", "#FFB547", "#5A6B88", "#D6E2F2", "#111B33"];
+
+    function buildChart(id, type, labels, values) {
+        const element = document.getElementById(id);
+        if (!element || !labels.length) {
+            return;
+        }
+        new Chart(element, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: chartColors,
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: type === "line"
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: type !== "line", position: "bottom" } },
+                scales: type === "line" ? { y: { beginAtZero: true, ticks: { precision: 0 } } } : {}
+            }
+        });
+    }
+
+    buildChart("assetsByTypeChart", "doughnut", chartData.assets_by_type.labels, chartData.assets_by_type.values);
+    buildChart("approvalStatusChart", "doughnut", chartData.approval_status.labels, chartData.approval_status.values);
+    buildChart("monthlyActivityChart", "line", chartData.monthly_activity.labels, chartData.monthly_activity.values);
+</script>
 {% endblock %}

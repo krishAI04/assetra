@@ -147,7 +147,10 @@
 <section class="table-card" id="distributions" style="margin-bottom: 18px;">
     <div class="panel-header">
         <h3>Distributions</h3>
-        <a href="{% url 'approvals' %}">Review Approvals</a>
+        <div class="page-header-actions">
+            <a href="{% url 'distribution-create' %}?client={{ client.pk }}">Add Distribution</a>
+            <a href="{% url 'approvals' %}">Review Approvals</a>
+        </div>
     </div>
     <table class="data-table">
         <thead>
@@ -192,7 +195,7 @@
                 <tr>
                     <td>
                         {% if document.file %}
-                            <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener">{{ document.title }}</a>
+                            <a href="{% url 'document-preview' document.pk %}">{{ document.title }}</a>
                         {% else %}
                             {{ document.title }}
                         {% endif %}

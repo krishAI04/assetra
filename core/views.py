@@ -719,14 +719,17 @@ class DocumentViewSet(FirmScopedModelViewSet):
 class AuditLogViewSet(FirmScopedModelViewSet):
     """Read-only API endpoints for audit logs."""
 
-    queryset = AuditLog.objects.select_related("firm", "actor").all()
+    queryset= AuditLog.objects.select_related("firm", "actor").all()
     serializer_class = AuditLogSerializer
     http_method_names = ["get", "head", "options"]
+    
+    
+        
     action_role_map = {
-        "list": {User.Role.ADMIN, User.Role.LAWYER},
-        "retrieve": {User.Role.ADMIN, User.Role.LAWYER},
-    }
-
+            "list": {User.Role.ADMIN, User.Role.LAWYER},
+            "retrieve": {User.Role.ADMIN, User.Role.LAWYER},
+        }
+   
 
 # ---------------------------------------------------------------------------
 # Dashboard summary endpoint

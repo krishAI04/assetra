@@ -11,14 +11,15 @@
     </div>
 </section>
 
-<section class="filter-card">
+<details class="advanced-filter-card" {% if search_query or request.GET.action or request.GET.actor %}open{% endif %}>
+    <summary>Advanced Filters</summary>
     <form method="get" class="toolbar audit-toolbar">
         <input type="text" name="search" placeholder="Search description, action, or model" value="{{ search_query }}">
         <input type="text" name="action" placeholder="Action" value="{{ request.GET.action }}">
         {{ filter_form.actor }}
-        <button type="submit" class="button button-secondary">Filter</button>
+        <button type="submit" class="button button-secondary">Apply Filters</button>
     </form>
-</section>
+</details>
 
 <section class="table-card">
     <table class="data-table">

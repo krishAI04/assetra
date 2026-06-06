@@ -15,6 +15,7 @@
 </section>
 
 <section class="approval-actions-top">
+    <a href="{% url 'distribution-create' %}" class="button button-secondary">Add Distribution</a>
     {% if request.user.can_approve and selected_distribution and selected_distribution.approval_status == 'pending' %}
         <form method="post" action="{% url 'distribution-reject' selected_distribution.pk %}">
             {% csrf_token %}
@@ -28,7 +29,8 @@
     {% endif %}
 </section>
 
-<section class="filter-card">
+<details class="advanced-filter-card" {% if selected_status or search_query %}open{% endif %}>
+    <summary>Advanced Filters</summary>
     <form method="get" class="toolbar simple-two">
         <select name="status">
             <option value="">All statuses</option>
@@ -38,9 +40,9 @@
         </select>
         <input type="text" name="search" placeholder="Search client, asset, or beneficiary" value="{{ search_query }}">
         {% if selected_distribution %}<input type="hidden" name="selected" value="{{ selected_distribution.pk }}">{% endif %}
-        <button type="submit" class="button button-secondary">Filter</button>
+        <button type="submit" class="button button-secondary">Apply Filters</button>
     </form>
-</section>
+</details>
 
 <section class="split-page">
     <div class="table-card">
@@ -124,7 +126,7 @@
                 </div>
                 <div class="doc-list">
                     {% for document in linked_documents %}
-                        <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener" class="doc-item">
+                        <a href="{% url 'document-preview' document.pk %}" class="doc-item">
                             <div>
                                 <strong>{{ document.title }}</strong>
                                 <span>{{ document.created_at|date:"M j, Y" }}</span>

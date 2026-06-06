@@ -12,7 +12,8 @@
     </div>
 </section>
 
-<section class="filter-card">
+<details class="advanced-filter-card" {% if search_query or selected_client or selected_asset %}open{% endif %}>
+    <summary>Advanced Filters</summary>
     <form method="get" class="toolbar simple-two">
         <input type="text" name="search" placeholder="Search by title" value="{{ search_query }}">
         <select name="client">
@@ -27,9 +28,9 @@
                 <option value="{{ asset.pk }}" {% if selected_asset == asset.pk|stringformat:"s" %}selected{% endif %}>{{ asset.title }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="button button-secondary">Filter</button>
+        <button type="submit" class="button button-secondary">Apply Filters</button>
     </form>
-</section>
+</details>
 
 <section class="detail-grid">
     <div class="table-card span-wide">
@@ -54,7 +55,7 @@
                         <td>{{ document.created_at|date:"M j, Y" }}</td>
                         <td class="action-row">
                             {% if document.file %}
-                                <a href="{% url 'document-open' document.pk %}" target="_blank" rel="noopener">View</a>
+                                <a href="{% url 'document-preview' document.pk %}">Preview</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -70,6 +71,9 @@
         </div>
         <form method="post" enctype="multipart/form-data" class="stack-form">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors|striptags }}</div>
+            {% endif %}
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -83,4 +87,38 @@
         </form>
     </div>
 </section>
+{{ asset_client_map|json_script:"upload-asset-client-map" }}
+<script>
+    const uploadClientSelect = document.getElementById("id_client");
+    const uploadAssetSelect = document.getElementById("id_asset");
+    const assetClientMapElement = document.getElementById("upload-asset-client-map");
+    const assetClientMap = assetClientMapElement ? JSON.parse(assetClientMapElement.textContent) : {};
+
+    function filterUploadAssets() {
+        if (!uploadClientSelect || !uploadAssetSelect) {
+            return;
+        }
+
+        const selectedClient = uploadClientSelect.value;
+        Array.from(uploadAssetSelect.options).forEach((option) => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            const optionClient = assetClientMap[option.value];
+            option.hidden = Boolean(selectedClient) && optionClient !== selectedClient;
+        });
+
+        const selectedAsset = uploadAssetSelect.value;
+        if (selectedAsset && uploadAssetSelect.selectedOptions[0].hidden) {
+            uploadAssetSelect.value = "";
+        }
+    }
+
+    filterUploadAssets();
+    if (uploadClientSelect) {
+        uploadClientSelect.addEventListener("change", filterUploadAssets);
+    }
+</script>
 {% endblock %}
