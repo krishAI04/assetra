@@ -6,8 +6,12 @@
 {% block content %}
 <section class="page-header">
     <div>
-        <h1>Good morning, {{ request.user.first_name|default:request.user.username }}</h1>
-        <p>Keep your firm's estate work clear, structured, and moving.</p>
+        <h1>Estate operations, organized.</h1>
+        <p>Good morning, {{ request.user.first_name|default:request.user.username }}. Track clients, assets, approvals, documents, tasks, and AI reviews from one secure workspace.</p>
+    </div>
+    <div class="page-header-actions">
+        <a class="button button-secondary" href="{% url 'documents' %}">Upload Document</a>
+        <a class="button button-primary" href="{% url 'client-create' %}">Add Client</a>
     </div>
 </section>
 
@@ -15,18 +19,22 @@
     <article class="stat-card">
         <span class="stat-label">Total Clients</span>
         <strong>{{ stats.total_clients }}</strong>
+        <span class="muted">Client records under your firm</span>
     </article>
     <article class="stat-card">
         <span class="stat-label">Total Assets</span>
         <strong>{{ stats.total_assets }}</strong>
+        <span class="muted">Properties and financial assets</span>
     </article>
     <article class="stat-card">
         <span class="stat-label">Active Estates</span>
         <strong>{{ stats.active_estates }}</strong>
+        <span class="muted">Open estate workflows</span>
     </article>
     <article class="stat-card">
         <span class="stat-label">Pending Approvals</span>
         <strong>{{ stats.pending_approvals }}</strong>
+        <span class="muted">Awaiting review decisions</span>
     </article>
 </section>
 
@@ -35,19 +43,19 @@
         <div class="panel-header">
             <h3>Assets by Type</h3>
         </div>
-        <canvas id="assetsByTypeChart" height="170"></canvas>
+        <canvas id="assetsByTypeChart" height="170" aria-label="Assets grouped by type" role="img"></canvas>
     </article>
     <article class="chart-card">
         <div class="panel-header">
             <h3>Approval Status</h3>
         </div>
-        <canvas id="approvalStatusChart" height="170"></canvas>
+        <canvas id="approvalStatusChart" height="170" aria-label="Distribution approvals grouped by status" role="img"></canvas>
     </article>
     <article class="chart-card">
         <div class="panel-header">
             <h3>Monthly Activity</h3>
         </div>
-        <canvas id="monthlyActivityChart" height="170"></canvas>
+        <canvas id="monthlyActivityChart" height="170" aria-label="Monthly activity count" role="img"></canvas>
     </article>
 </section>
 
@@ -60,26 +68,45 @@
             <a href="{% url 'client-create' %}" class="quick-action-card quick-action-card-client">
                 <span class="quick-action-icon" aria-hidden="true"></span>
                 <strong>Add Client</strong>
-                
+                <span class="muted">Create a new estate profile</span>
             </a>
             <a href="{% url 'asset-create' %}" class="quick-action-card quick-action-card-asset">
                 <span class="quick-action-icon" aria-hidden="true"></span>
                 <strong>Add Asset</strong>
-                
+                <span class="muted">Register property or accounts</span>
             </a>
             <a href="{% url 'documents' %}" class="quick-action-card quick-action-card-doc">
                 <span class="quick-action-icon" aria-hidden="true"></span>
                 <strong>Upload Document</strong>
-                
+                <span class="muted">Attach files for review</span>
             </a>
             <a href="{% url 'approvals' %}" class="quick-action-card quick-action-card-approval">
                 <span class="quick-action-icon" aria-hidden="true"></span>
                 <strong>Approvals</strong>
-                
+                <span class="muted">Review pending distributions</span>
                 {% if stats.pending_approvals %}
                     <span class="quick-action-badge">{{ stats.pending_approvals }}</span>
                 {% endif %}
             </a>
+        </div>
+    </div>
+    <div class="recent-panel">
+        <div class="panel-header">
+            <h3>My Tasks</h3>
+            <a href="{% url 'tasks' %}?assigned=me">View All</a>
+        </div>
+        <div class="recent-list">
+            {% for task in my_tasks %}
+                <div class="activity-item">
+                    <span class="avatar small">{{ task.priority|slice:":1"|upper }}</span>
+                    <div>
+                        <strong>{{ task.title }}</strong>
+                        <p>{{ task.client.full_name|default:"General task" }} · {{ task.due_date|default:"No due date" }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty-text">No open tasks assigned to you.</p>
+            {% endfor %}
         </div>
     </div>
     <div class="recent-panel">

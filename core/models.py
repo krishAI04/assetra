@@ -414,3 +414,167 @@ class Notification(TimeStampedModel):
 
     def __str__(self):
         return self.message
+
+
+class Task(TimeStampedModel):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        IN_PROGRESS = "in_progress", "In Progress"
+        COMPLETED = "completed", "Completed"
+
+    class Priority(models.TextChoices):
+        LOW = "low", "Low"
+        MEDIUM = "medium", "Medium"
+        HIGH = "high", "High"
+
+    firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="tasks")
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="tasks",
+        null=True,
+        blank=True,
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name="assigned_tasks")
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_tasks",
+    )
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
+
+    class Meta:
+        ordering = ["due_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["firm", "status", "due_date"]),
+            models.Index(fields=["assigned_to", "status"]),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.client and self.client.firm_id != self.firm_id:
+            raise ValidationError("Task client must stay within the same firm.")
+        if self.assigned_to.firm_id != self.firm_id:
+            raise ValidationError("Assigned user must belong to the same firm.")
+
+    def __str__(self):
+        return self.title
+
+
+class Comment(TimeStampedModel):
+    firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="comments")
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    asset = models.ForeignKey(
+        Asset,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    text = models.TextField()
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["firm", "created_at"])]
+
+    def clean(self):
+        super().clean()
+        if not self.client and not self.asset and not self.document:
+            raise ValidationError("A comment must be attached to a client, asset, or document.")
+        if self.client and self.client.firm_id != self.firm_id:
+            raise ValidationError("Comment client must stay within the same firm.")
+        if self.asset and self.asset.firm_id != self.firm_id:
+            raise ValidationError("Comment asset must stay within the same firm.")
+        if self.document and self.document.firm_id != self.firm_id:
+            raise ValidationError("Comment document must stay within the same firm.")
+
+    def __str__(self):
+        return self.text[:60]
+
+
+class DocumentVersion(TimeStampedModel):
+    firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="document_versions")
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="versions")
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="uploaded_document_versions",
+    )
+    file = models.FileField(upload_to=document_upload_to)
+    version_number = models.PositiveIntegerField()
+    note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-version_number"]
+        unique_together = ("document", "version_number")
+        indexes = [models.Index(fields=["firm", "document", "version_number"])]
+
+    def clean(self):
+        super().clean()
+        if self.document.firm_id != self.firm_id:
+            raise ValidationError("Document versions must stay within the same firm.")
+
+    def __str__(self):
+        return f"{self.document.title} v{self.version_number}"
+
+
+class AIDocumentAnalysis(TimeStampedModel):
+    class Mode(models.TextChoices):
+        MOCK = "mock", "Mock Demo"
+        LIVE = "live", "Live Gemini"
+
+    firm = models.ForeignKey(Firm, on_delete=models.CASCADE, related_name="ai_document_analyses")
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        related_name="ai_analyses",
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_ai_document_analyses",
+    )
+    mode = models.CharField(max_length=20, choices=Mode.choices, default=Mode.MOCK)
+    summary = models.TextField()
+    important_parties = models.JSONField(default=list, blank=True)
+    important_dates = models.JSONField(default=list, blank=True)
+    asset_details = models.JSONField(default=dict, blank=True)
+    risk_points = models.JSONField(default=list, blank=True)
+    suggested_next_action = models.TextField(blank=True)
+    raw_response = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["firm", "document", "created_at"]),
+            models.Index(fields=["firm", "mode", "created_at"]),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.document.firm_id != self.firm_id:
+            raise ValidationError("AI document analysis must stay within the same firm.")
+
+    def __str__(self):
+        return f"AI analysis for {self.document.title}"

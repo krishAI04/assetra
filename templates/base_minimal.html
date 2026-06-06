@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/assetra.css' %}">
 </head>
 <body class="minimal-body {% block body_class %}{% endblock %}">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="minimal-shell">
         <header class="minimal-topbar">
             <div class="minimal-topbar-inner">
@@ -32,7 +33,7 @@
                 {% endif %}
             </div>
         </header>
-        <main class="minimal-main {% block main_class %}{% endblock %}">
+        <main class="minimal-main {% block main_class %}{% endblock %}" id="main-content" tabindex="-1">
             {% if messages %}
                 <div class="messages">
                     {% for message in messages %}

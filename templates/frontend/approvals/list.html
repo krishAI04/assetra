@@ -9,13 +9,17 @@
 {% endblock %}
 
 {% block content %}
-<section class="simple-page-header">
-    <h1>Review Queue</h1>
-    <p>Pending approval requests require your final sign-off.</p>
+<section class="page-header">
+    <div>
+        <h1>Review Queue</h1>
+        <p>Review asset distributions with linked documents, ownership percentages, and approval history before final sign-off.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'distribution-create' %}" class="button button-secondary">Add Distribution</a>
+    </div>
 </section>
 
 <section class="approval-actions-top">
-    <a href="{% url 'distribution-create' %}" class="button button-secondary">Add Distribution</a>
     {% if request.user.can_approve and selected_distribution and selected_distribution.approval_status == 'pending' %}
         <form method="post" action="{% url 'distribution-reject' selected_distribution.pk %}">
             {% csrf_token %}

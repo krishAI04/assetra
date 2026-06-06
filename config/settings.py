@@ -10,10 +10,32 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_env_file():
+    """
+    Load local .env values during development.
+    Render already provides real environment variables, so this is mainly for your laptop.
+    """
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_env_file()
 
 
 # Quick-start development settings - unsuitable for production
@@ -166,3 +188,10 @@ SPECTACULAR_SETTINGS = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# AI demo settings
+# Default is mock mode so public visitors cannot use your paid/free API quota.
+ASSETRA_AI_MODE = os.environ.get("ASSETRA_AI_MODE", "mock")
+ASSETRA_AI_DAILY_LIMIT = int(os.environ.get("ASSETRA_AI_DAILY_LIMIT", "10"))
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")

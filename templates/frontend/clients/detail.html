@@ -44,6 +44,8 @@
     <a href="#beneficiaries">Beneficiaries</a>
     <a href="#distributions">Distributions</a>
     <a href="#documents">Documents</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#comments">Comments</a>
 </section>
 
 <section class="detail-grid" id="overview">
@@ -174,6 +176,86 @@
             {% endfor %}
         </tbody>
     </table>
+</section>
+
+<section class="detail-grid" id="tasks" style="margin-bottom: 18px;">
+    <div class="table-card">
+        <div class="panel-header">
+            <h3>Client Tasks</h3>
+            <a href="{% url 'tasks' %}?assigned=me">Open Tasks</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Assigned To</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <strong>{{ task.title }}</strong>
+                            <div class="muted">{{ task.description|default:"No description" }}</div>
+                        </td>
+                        <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
+                        <td>{{ task.due_date|default:"No due date" }}</td>
+                        <td><span class="badge {{ task.status|status_class }}">{{ task.get_status_display }}</span></td>
+                        <td class="action-row"><a href="{% url 'task-edit' task.pk %}">Edit</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="empty-text">No tasks for this client yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Add Task</h3>
+        </div>
+        <form method="post" action="{% url 'tasks' %}" class="stack-form compact">
+            {% csrf_token %}
+            {% for field in task_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="button button-primary">Create Task</button>
+        </form>
+    </div>
+</section>
+
+<section class="detail-grid" id="comments" style="margin-bottom: 18px;">
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Internal Comments</h3>
+        </div>
+        <div class="comment-list">
+            {% for comment in comments %}
+                <div class="comment-item">
+                    <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"Unknown" }}</strong>
+                    <p>{{ comment.text }}</p>
+                    <span>{{ comment.created_at|date:"M j, Y g:i A" }}</span>
+                </div>
+            {% empty %}
+                <p class="empty-text">No comments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Add Comment</h3>
+        </div>
+        <form method="post" action="{% url 'client-comment-create' client.pk %}" class="stack-form compact">
+            {% csrf_token %}
+            {{ comment_form.text }}
+            <button type="submit" class="button button-primary">Post Comment</button>
+        </form>
+    </div>
 </section>
 
 <section class="table-card" id="documents">

@@ -37,9 +37,139 @@
                 <dd>{{ document.created_at|date:"M j, Y g:i A" }}</dd>
             </div>
         </dl>
+        <div class="document-side-section ai-analysis-panel" id="ai-analysis">
+            <div class="panel-header compact-header">
+                <div>
+                    <h3>AI Document Analyzer</h3>
+                    <p class="muted">Demo-safe analysis for summaries, risks, dates, and parties.</p>
+                </div>
+                <span class="badge badge-info">{{ ai_mode|title }} mode</span>
+            </div>
+            <div class="ai-analysis-body">
+                <form method="post" action="{% url 'document-ai-analyze' document.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="button button-primary button-block">Analyze Document</button>
+                </form>
+                {% if latest_ai_analysis %}
+                    <div class="ai-result-card">
+                        <div class="ai-result-top">
+                            <strong>Latest Result</strong>
+                            <span>{{ latest_ai_analysis.get_mode_display }} &middot; {{ latest_ai_analysis.created_at|date:"M j, Y g:i A" }}</span>
+                        </div>
+                        <h4>Summary</h4>
+                        <p>{{ latest_ai_analysis.summary }}</p>
+
+                        <h4>Important Parties</h4>
+                        <ul>
+                            {% for party in latest_ai_analysis.important_parties %}
+                                <li>{{ party }}</li>
+                            {% empty %}
+                                <li>No parties detected.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h4>Important Dates</h4>
+                        <ul>
+                            {% for date in latest_ai_analysis.important_dates %}
+                                <li>{{ date }}</li>
+                            {% empty %}
+                                <li>No dates detected.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h4>Asset Details</h4>
+                        <ul>
+                            {% for key, value in latest_ai_analysis.asset_details.items %}
+                                <li><strong>{{ key|title }}:</strong> {{ value }}</li>
+                            {% empty %}
+                                <li>No asset details detected.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h4>Risk Points</h4>
+                        <ul>
+                            {% for risk in latest_ai_analysis.risk_points %}
+                                <li>{{ risk }}</li>
+                            {% empty %}
+                                <li>No risk points detected.</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h4>Suggested Next Action</h4>
+                        <p>{{ latest_ai_analysis.suggested_next_action }}</p>
+                    </div>
+                {% else %}
+                    <p class="empty-text">No AI analysis yet. Run the analyzer to generate a demo-safe review.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="document-side-section" id="versions">
+            <div class="panel-header compact-header">
+                <h3>Version History</h3>
+            </div>
+            <div class="version-list">
+                <div class="version-item current">
+                    <strong>Original File</strong>
+                    <span>{{ document.created_at|date:"M j, Y g:i A" }}</span>
+                </div>
+                {% for version in versions %}
+                    <div class="version-item">
+                        <strong>Version {{ version.version_number }}</strong>
+                        <span>{{ version.uploaded_by.get_full_name|default:version.uploaded_by.username|default:"Unknown" }} · {{ version.created_at|date:"M j, Y" }}</span>
+                        {% if version.note %}<p>{{ version.note }}</p>{% endif %}
+                    </div>
+                {% empty %}
+                    <p class="empty-text">No newer versions uploaded.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="document-side-section">
+            <div class="panel-header compact-header">
+                <h3>Upload New Version</h3>
+            </div>
+            <form method="post" action="{% url 'document-version-create' document.pk %}" enctype="multipart/form-data" class="stack-form compact">
+                {% csrf_token %}
+                {% for field in version_form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="button button-primary">Upload Version</button>
+            </form>
+        </div>
     </aside>
     <div class="document-preview-frame">
         <iframe src="{% url 'document-open' document.pk %}" title="{{ document.title }}"></iframe>
+    </div>
+</section>
+
+<section class="detail-grid" id="document-comments" style="margin-top: 20px;">
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Document Comments</h3>
+        </div>
+        <div class="comment-list">
+            {% for comment in comments %}
+                <div class="comment-item">
+                    <strong>{{ comment.author.get_full_name|default:comment.author.username|default:"Unknown" }}</strong>
+                    <p>{{ comment.text }}</p>
+                    <span>{{ comment.created_at|date:"M j, Y g:i A" }}</span>
+                </div>
+            {% empty %}
+                <p class="empty-text">No document comments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Add Comment</h3>
+        </div>
+        <form method="post" action="{% url 'document-comment-create' document.pk %}" class="stack-form compact">
+            {% csrf_token %}
+            {{ comment_form.text }}
+            <button type="submit" class="button button-primary">Post Comment</button>
+        </form>
     </div>
 </section>
 {% endblock %}

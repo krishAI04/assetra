@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from .models import (
+    AIDocumentAnalysis,
     Asset,
     AssetDistribution,
     AuditLog,
@@ -138,3 +139,26 @@ class AuditLogAdmin(admin.ModelAdmin):
     search_fields = ("description",)
     list_select_related = ("firm", "actor")
     readonly_fields = ("firm", "actor", "action", "target_model", "target_id", "description", "metadata", "created_at")
+
+
+@admin.register(AIDocumentAnalysis)
+class AIDocumentAnalysisAdmin(admin.ModelAdmin):
+    list_display = ("document", "firm", "mode", "created_by", "created_at")
+    list_filter = ("firm", "mode")
+    search_fields = ("document__title", "summary")
+    list_select_related = ("firm", "document", "created_by")
+    readonly_fields = (
+        "firm",
+        "document",
+        "created_by",
+        "mode",
+        "summary",
+        "important_parties",
+        "important_dates",
+        "asset_details",
+        "risk_points",
+        "suggested_next_action",
+        "raw_response",
+        "created_at",
+        "updated_at",
+    )

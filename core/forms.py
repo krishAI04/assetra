@@ -3,7 +3,18 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 
-from .models import Asset, AssetDistribution, Beneficiary, Client, Document, Firm, User
+from .models import (
+    Asset,
+    AssetDistribution,
+    Beneficiary,
+    Client,
+    Comment,
+    Document,
+    DocumentVersion,
+    Firm,
+    Task,
+    User,
+)
 
 
 class StyledAuthenticationForm(AuthenticationForm):
@@ -277,3 +288,54 @@ class AuditLogFilterForm(forms.Form):
 
 class ApprovalRejectForm(forms.Form):
     rejection_reason = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False)
+
+
+class TaskForm(FirmScopedModelForm):
+    class Meta:
+        model = Task
+        fields = [
+            "client",
+            "title",
+            "description",
+            "assigned_to",
+            "due_date",
+            "priority",
+            "status",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, user=user, **kwargs)
+        if user and user.firm_id:
+            self.instance.firm = user.firm
+            self.fields["client"].queryset = Client.objects.filter(firm=user.firm).order_by(
+                "last_name",
+                "first_name",
+            )
+            self.fields["assigned_to"].queryset = User.objects.filter(firm=user.firm).order_by(
+                "first_name",
+                "last_name",
+                "username",
+            )
+        self.fields["client"].required = False
+
+
+class CommentForm(FirmScopedModelForm):
+    class Meta:
+        model = Comment
+        fields = ["text"]
+        widgets = {
+            "text": forms.Textarea(attrs={"rows": 3, "placeholder": "Add an internal comment..."}),
+        }
+
+
+class DocumentVersionForm(FirmScopedModelForm):
+    class Meta:
+        model = DocumentVersion
+        fields = ["file", "note"]
+        widgets = {
+            "note": forms.Textarea(attrs={"rows": 3, "placeholder": "What changed in this version?"}),
+        }

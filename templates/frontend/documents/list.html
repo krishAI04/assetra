@@ -6,6 +6,7 @@
 <section class="page-header">
     <div>
         <h1>Document Repository</h1>
+        <p>Upload, filter, preview, version, and analyze estate documents from one protected document workspace.</p>
     </div>
     <div class="page-header-actions">
         <a class="button button-primary" href="#upload-form">Upload Document</a>
@@ -67,7 +68,10 @@
     </div>
     <div class="panel" id="upload-form">
         <div class="panel-header">
-            <h3>Upload Document</h3>
+            <div>
+                <h3>Upload Document</h3>
+                <p class="muted">Choose a client first to narrow the asset list to related assets.</p>
+            </div>
         </div>
         <form method="post" enctype="multipart/form-data" class="stack-form">
             {% csrf_token %}

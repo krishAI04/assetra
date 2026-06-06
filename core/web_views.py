@@ -2,9 +2,11 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
+from django.utils import timezone
 from django.http import FileResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -18,21 +20,29 @@ from .forms import (
     AuditLogFilterForm,
     BeneficiaryForm,
     ClientForm,
+    CommentForm,
     DocumentForm,
+    DocumentVersionForm,
     SignupForm,
     StyledAuthenticationForm,
+    TaskForm,
     UserManagementForm,
 )
 from .models import (
+    AIDocumentAnalysis,
     Asset,
     AssetDistribution,
     AuditLog,
     Beneficiary,
     Client,
+    Comment,
     Document,
+    DocumentVersion,
     Notification,
+    Task,
     User,
 )
+from .ai_tools import analyze_document
 from .views import create_audit_log
 
 
@@ -117,6 +127,18 @@ class FrontendBaseMixin(LoginRequiredMixin):
             Q(user=self.request.user) | Q(user__isnull=True)
         )
 
+    def firm_tasks(self):
+        return Task.objects.filter(firm=self.get_firm())
+
+    def firm_comments(self):
+        return Comment.objects.filter(firm=self.get_firm())
+
+    def firm_document_versions(self):
+        return DocumentVersion.objects.filter(firm=self.get_firm())
+
+    def firm_ai_document_analyses(self):
+        return AIDocumentAnalysis.objects.filter(firm=self.get_firm())
+
     def common_context(self, **extra_context):
         """Add values that almost every page needs."""
         notifications = self.firm_notifications()
@@ -125,6 +147,10 @@ class FrontendBaseMixin(LoginRequiredMixin):
             "topbar_notifications": notifications[:5],
             "topbar_unread_notifications": notifications.filter(is_read=False).count(),
             "global_search_query": self.request.GET.get("q", ""),
+            "my_open_task_count": self.firm_tasks()
+            .filter(assigned_to=self.request.user)
+            .exclude(status=Task.Status.COMPLETED)
+            .count(),
             **extra_context,
         }
 
@@ -174,12 +200,14 @@ class ApproverRequiredMixin(UserPassesTestMixin):
 
 
 class HomeRedirectView(View):
-    """Send users to the dashboard if logged in, otherwise to login."""
+    """Show the public landing page, or send logged-in users to the dashboard."""
+
+    template_name = "frontend/landing.html"
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("dashboard")
-        return redirect("login")
+        return render(request, self.template_name)
 
 
 class DashboardView(FrontendBaseMixin, View):
@@ -234,6 +262,10 @@ class DashboardView(FrontendBaseMixin, View):
                 },
             },
             "recent_activity": self.firm_audit_logs().select_related("actor")[:8],
+            "my_tasks": self.firm_tasks()
+            .select_related("client", "assigned_to")
+            .filter(assigned_to=request.user)
+            .exclude(status=Task.Status.COMPLETED)[:6],
         }
         return self.render_page(request, self.template_name, context)
 
@@ -462,6 +494,10 @@ class ClientDetailView(FrontendBaseMixin, View):
             "asset_count": assets.count(),
             "beneficiary_count": beneficiaries.count(),
             "document_count": documents.count(),
+            "tasks": self.firm_tasks().filter(client=client).select_related("assigned_to")[:8],
+            "task_form": TaskForm(user=request.user, initial={"client": client.pk}),
+            "comments": self.firm_comments().filter(client=client).select_related("author")[:8],
+            "comment_form": CommentForm(user=request.user),
             "activity": self.firm_audit_logs().filter(
                 Q(target_model="Client", target_id=client.pk)
                 | Q(metadata__client_id=client.pk)
@@ -469,6 +505,165 @@ class ClientDetailView(FrontendBaseMixin, View):
             )[:8],
         }
         return self.render_page(request, self.template_name, context)
+
+
+class TaskListView(FrontendBaseMixin, View):
+    """Show firm tasks and let users create simple work assignments."""
+
+    template_name = "frontend/tasks/list.html"
+
+    def get_filtered_tasks(self):
+        tasks = self.firm_tasks().select_related("client", "assigned_to", "created_by")
+        status_value = self.request.GET.get("status")
+        assigned_value = self.request.GET.get("assigned")
+        search = self.request.GET.get("search")
+
+        if status_value == "overdue":
+            tasks = tasks.exclude(status=Task.Status.COMPLETED).filter(due_date__lt=timezone.localdate())
+        elif status_value:
+            tasks = tasks.filter(status=status_value)
+        if assigned_value == "me":
+            tasks = tasks.filter(assigned_to=self.request.user)
+        elif assigned_value:
+            tasks = tasks.filter(assigned_to_id=assigned_value)
+        if search:
+            tasks = tasks.filter(Q(title__icontains=search) | Q(description__icontains=search))
+
+        return tasks, status_value, assigned_value, search
+
+    def get_context(self, form):
+        tasks, status_value, assigned_value, search = self.get_filtered_tasks()
+        return {
+            "tasks": tasks[:80],
+            "form": form,
+            "status_choices": Task.Status.choices,
+            "priority_choices": Task.Priority.choices,
+            "users": User.objects.filter(firm=self.get_firm()).order_by("first_name", "last_name", "username"),
+            "selected_status": status_value or "",
+            "selected_assigned": assigned_value or "",
+            "search_query": search or "",
+        }
+
+    def get(self, request):
+        return self.render_page(request, self.template_name, self.get_context(TaskForm(user=request.user)))
+
+    def post(self, request):
+        form = TaskForm(request.POST, user=request.user)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.firm = self.get_firm()
+            task.created_by = request.user
+            task.full_clean()
+            task.save()
+            create_audit_log(request.user, "create", task, f"Created task {task.title}.")
+            create_notification(
+                self.get_firm(),
+                f"Task assigned: {task.title}",
+                Notification.Type.INFO,
+                reverse("tasks"),
+                user=task.assigned_to,
+            )
+            messages.success(request, "Task created successfully.")
+            return redirect("tasks")
+
+        messages.error(request, "Task could not be saved. Please check the form.")
+        return self.render_page(request, self.template_name, self.get_context(form))
+
+
+class TaskUpdateView(FrontendBaseMixin, View):
+    """Edit an existing task."""
+
+    template_name = "frontend/tasks/form.html"
+
+    def get_task(self, pk):
+        return get_object_or_404(self.firm_tasks(), pk=pk)
+
+    def get(self, request, pk):
+        task = self.get_task(pk)
+        form = TaskForm(user=request.user, instance=task)
+        return self.render_page(request, self.template_name, {"form": form, "task": task})
+
+    def post(self, request, pk):
+        task = self.get_task(pk)
+        form = TaskForm(request.POST, user=request.user, instance=task)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.full_clean()
+            task.save()
+            create_audit_log(request.user, "update", task, f"Updated task {task.title}.")
+            messages.success(request, "Task updated successfully.")
+            return redirect("tasks")
+
+        return self.render_page(request, self.template_name, {"form": form, "task": task})
+
+
+class TaskStatusView(FrontendBaseMixin, View):
+    """Quickly change task status from task lists."""
+
+    def post(self, request, pk):
+        task = get_object_or_404(self.firm_tasks(), pk=pk)
+        status_value = request.POST.get("status")
+        if status_value in Task.Status.values:
+            task.status = status_value
+            task.full_clean()
+            task.save()
+            create_audit_log(request.user, "update", task, f"Changed task {task.title} to {task.get_status_display()}.")
+            messages.success(request, "Task status updated.")
+        return redirect(request.POST.get("next") or "tasks")
+
+
+class ClientCommentCreateView(FrontendBaseMixin, View):
+    """Add an internal comment to a client workspace."""
+
+    def post(self, request, pk):
+        client = get_object_or_404(self.firm_clients(), pk=pk)
+        form = CommentForm(request.POST, user=request.user)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.firm = self.get_firm()
+            comment.author = request.user
+            comment.client = client
+            comment.full_clean()
+            comment.save()
+            create_audit_log(request.user, "comment", comment, f"Commented on client {client.full_name}.")
+            create_notification(
+                self.get_firm(),
+                f"New comment on {client.full_name}",
+                Notification.Type.CLIENT,
+                reverse("client-workspace", kwargs={"pk": client.pk}),
+            )
+            messages.success(request, "Comment added.")
+        else:
+            messages.error(request, "Comment could not be added.")
+        return redirect(f"{reverse('client-workspace', kwargs={'pk': client.pk})}#comments")
+
+
+class DocumentCommentCreateView(FrontendBaseMixin, View):
+    """Add an internal comment to a document."""
+
+    def post(self, request, pk):
+        document = get_object_or_404(self.firm_documents(), pk=pk)
+        form = CommentForm(request.POST, user=request.user)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.firm = self.get_firm()
+            comment.author = request.user
+            comment.document = document
+            comment.client = document.client
+            comment.asset = document.asset
+            comment.full_clean()
+            comment.save()
+            create_audit_log(request.user, "comment", comment, f"Commented on document {document.title}.")
+            create_notification(
+                self.get_firm(),
+                f"New comment on document: {document.title}",
+                Notification.Type.DOCUMENT,
+                reverse("document-preview", kwargs={"pk": document.pk}),
+            )
+            messages.success(request, "Comment added.")
+        else:
+            messages.error(request, "Comment could not be added.")
+        return redirect(f"{reverse('document-preview', kwargs={'pk': document.pk})}#document-comments")
 
 
 class AssetCreateView(FrontendBaseMixin, View):
@@ -818,7 +1013,9 @@ class ProtectedDocumentView(FrontendBaseMixin, View):
         )
         if not self.user_can_access_document(document):
             return HttpResponseForbidden("You do not have permission to view this document.")
-        response = FileResponse(document.file.open("rb"), as_attachment=False)
+        latest_version = document.versions.order_by("-version_number").first()
+        file_to_open = latest_version.file if latest_version else document.file
+        response = FileResponse(file_to_open.open("rb"), as_attachment=False)
         response["X-Frame-Options"] = "SAMEORIGIN"
         return response
 
@@ -836,7 +1033,97 @@ class DocumentPreviewView(FrontendBaseMixin, View):
         if not self.user_can_access_document(document):
             return HttpResponseForbidden("You do not have permission to view this document.")
 
-        return self.render_page(request, self.template_name, {"document": document})
+        context = {
+            "document": document,
+            "versions": document.versions.select_related("uploaded_by"),
+            "version_form": DocumentVersionForm(user=request.user),
+            "comments": self.firm_comments().filter(document=document).select_related("author")[:10],
+            "comment_form": CommentForm(user=request.user),
+            "latest_ai_analysis": document.ai_analyses.select_related("created_by").first(),
+            "ai_mode": getattr(settings, "ASSETRA_AI_MODE", "mock"),
+        }
+        return self.render_page(request, self.template_name, context)
+
+
+class DocumentAIAnalyzeView(FrontendBaseMixin, View):
+    """Create an AI document analysis in mock mode or live Gemini mode."""
+
+    def live_ai_allowed(self):
+        live_mode_enabled = getattr(settings, "ASSETRA_AI_MODE", "mock") == "live"
+        if not live_mode_enabled:
+            return False
+
+        today = timezone.localdate()
+        live_calls_today = self.firm_ai_document_analyses().filter(
+            mode=AIDocumentAnalysis.Mode.LIVE,
+            created_at__date=today,
+        ).count()
+        return live_calls_today < getattr(settings, "ASSETRA_AI_DAILY_LIMIT", 10)
+
+    def post(self, request, pk):
+        document = get_object_or_404(self.firm_documents(), pk=pk)
+        if not self.user_can_access_document(document):
+            return HttpResponseForbidden("You do not have permission to analyze this document.")
+
+        use_live_ai = self.live_ai_allowed()
+        mode, data = analyze_document(document, use_live_ai=use_live_ai)
+
+        analysis = AIDocumentAnalysis(
+            firm=self.get_firm(),
+            document=document,
+            created_by=request.user,
+            mode=mode,
+            summary=data.get("summary", ""),
+            important_parties=data.get("important_parties", []),
+            important_dates=data.get("important_dates", []),
+            asset_details=data.get("asset_details", {}),
+            risk_points=data.get("risk_points", []),
+            suggested_next_action=data.get("suggested_next_action", ""),
+            raw_response=data.get("raw_response", {}),
+        )
+        analysis.full_clean()
+        analysis.save()
+
+        create_audit_log(request.user, "ai_analyze", analysis, f"Analyzed document {document.title}.")
+        create_notification(
+            self.get_firm(),
+            f"AI analysis ready: {document.title}",
+            Notification.Type.DOCUMENT,
+            reverse("document-preview", kwargs={"pk": document.pk}),
+        )
+        if mode == AIDocumentAnalysis.Mode.LIVE:
+            messages.success(request, "Live Gemini analysis generated.")
+        else:
+            messages.success(request, "Demo AI analysis generated.")
+        return redirect(f"{reverse('document-preview', kwargs={'pk': document.pk})}#ai-analysis")
+
+
+class DocumentVersionCreateView(FrontendBaseMixin, View):
+    """Upload a new file version for an existing document."""
+
+    def post(self, request, pk):
+        document = get_object_or_404(self.firm_documents(), pk=pk)
+        form = DocumentVersionForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            version = form.save(commit=False)
+            version.firm = self.get_firm()
+            version.document = document
+            version.uploaded_by = request.user
+            latest = document.versions.order_by("-version_number").first()
+            version.version_number = 1 if latest is None else latest.version_number + 1
+            version.full_clean()
+            version.save()
+            create_audit_log(request.user, "upload", version, f"Uploaded {version}.")
+            create_notification(
+                self.get_firm(),
+                f"New document version: {document.title} v{version.version_number}",
+                Notification.Type.DOCUMENT,
+                reverse("document-preview", kwargs={"pk": document.pk}),
+            )
+            messages.success(request, "New document version uploaded.")
+        else:
+            messages.error(request, "Version upload failed. Please check the form.")
+        return redirect(f"{reverse('document-preview', kwargs={'pk': document.pk})}#versions")
 
 
 class ApprovalsView(FrontendBaseMixin, View):

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Task | Assetra{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <h1>Edit Task</h1>
+        <p>Update assignment details, due date, priority, or status.</p>
+    </div>
+    <div class="page-header-actions">
+        <a class="button button-secondary" href="{% url 'tasks' %}">Back to Tasks</a>
+    </div>
+</section>
+
+<section class="panel form-panel-narrow">
+    <form method="post" class="stack-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="field-error">{{ form.non_field_errors|striptags }}</div>
+        {% endif %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="field-error">{{ field.errors|striptags }}</div>{% endif %}
+            </div>
+        {% endfor %}
+        <div class="form-actions">
+            <a class="button button-secondary" href="{% url 'tasks' %}">Cancel</a>
+            <button type="submit" class="button button-primary">Save Task</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
