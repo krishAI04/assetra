@@ -13,6 +13,7 @@ from .views import (
     FirmViewSet,
     UserViewSet,
 )
+from .mobile_auth import MobileLoginAPIView, MobileLogoutAPIView, MobileMeAPIView
 
 router = DefaultRouter()
 router.register("firms", FirmViewSet, basename="firm")
@@ -26,6 +27,9 @@ router.register("documents", DocumentViewSet, basename="document")
 router.register("audit-logs", AuditLogViewSet, basename="audit-log")
 
 urlpatterns = [
+    path("auth/login/", MobileLoginAPIView.as_view(), name="mobile-login"),
+    path("auth/logout/", MobileLogoutAPIView.as_view(), name="mobile-logout"),
+    path("auth/me/", MobileMeAPIView.as_view(), name="mobile-me"),
     path("dashboard/summary/", DashboardSummaryAPIView.as_view(), name="dashboard-summary"),
 ]
 
